@@ -54,6 +54,8 @@ function isArchivedSession(
   name: string,
   cfg: Required<PluginConfig>,
 ): boolean {
+  // Never treat our own hardlinks (or archived hardlinks) as source archives
+  if (name.startsWith(LINK_PREFIX)) return false;
   if (cfg.includeDeleted && /\.jsonl\.deleted\.\d{4}-/.test(name)) return true;
   if (cfg.includeReset && /\.jsonl\.reset\.\d{4}-/.test(name)) return true;
   return false;
