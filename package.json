@@ -1,0 +1,14 @@
+{
+  "name": "@openclaw-local/session-archive-indexer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Indexes archived/deleted/reset session transcripts into OpenClaw memory search",
+  "type": "module",
+  "main": "index.ts",
+  "peerDependencies": {
+    "openclaw": "*"
+  },
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  }
+}

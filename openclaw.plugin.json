@@ -1,0 +1,13 @@
+{
+  "id": "session-archive-indexer",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": { "type": "boolean" },
+      "intervalMinutes": { "type": "number", "minimum": 1 },
+      "includeDeleted": { "type": "boolean" },
+      "includeReset": { "type": "boolean" }
+    }
+  }
+}
