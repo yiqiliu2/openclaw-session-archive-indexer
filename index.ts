@@ -72,11 +72,12 @@ function hardlinkName(srcBasename: string): string {
     const hash = crypto.createHash("sha256").update(srcBasename).digest("hex").slice(0, 16);
     return `${LINK_PREFIX}${hash}.jsonl`;
   }
-  const [, , type, ts] = m;
-  // Hash the full source name for a collision-free, UUID-free identifier
-  const hash = crypto.createHash("sha256").update(srcBasename).digest("hex").slice(0, 16);
+  const [, sessionId, type, ts] = m;
+  // New deterministic UUID so the session system won't match the original session
+  const newUuid = crypto.createHash("sha256").update(srcBasename).digest("hex").slice(0, 32)
+    .replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, "$1-$2-$3-$4-$5");
   const safeTs = ts.replace(/[:.]/g, "-");
-  return `${LINK_PREFIX}${type}_${safeTs}_${hash}.jsonl`;
+  return `${LINK_PREFIX}${sessionId}_${type}_${safeTs}_${newUuid}.jsonl`;
 }
 
 async function loadState(stateDir: string): Promise<LinkState> {
