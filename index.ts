@@ -3,6 +3,7 @@ import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/core";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import crypto from "node:crypto";
 
 /**
  * Session Archive Indexer plugin
@@ -58,17 +59,24 @@ function isArchivedSession(
   return false;
 }
 
-/** Deterministic hardlink name from source file basename */
+/**
+ * Deterministic hardlink name from source file basename.
+ * Uses a content-hash instead of the raw session UUID so the session system
+ * never mistakes the link for an active session on the same channel.
+ */
 function hardlinkName(srcBasename: string): string {
   const m = srcBasename.match(
     /^(.+?)\.jsonl\.(deleted|reset)\.(\d{4}-\d{2}-\d{2}T[\d-]+(?:\.\d+)?Z?)$/,
   );
   if (!m) {
-    return LINK_PREFIX + srcBasename.replace(/\.jsonl\./, "_").replace(/[^a-zA-Z0-9_.-]/g, "_") + ".jsonl";
+    const hash = crypto.createHash("sha256").update(srcBasename).digest("hex").slice(0, 16);
+    return `${LINK_PREFIX}${hash}.jsonl`;
   }
-  const [, base, type, ts] = m;
+  const [, , type, ts] = m;
+  // Hash the full source name for a collision-free, UUID-free identifier
+  const hash = crypto.createHash("sha256").update(srcBasename).digest("hex").slice(0, 16);
   const safeTs = ts.replace(/[:.]/g, "-");
-  return `${LINK_PREFIX}${base}_${type}_${safeTs}.jsonl`;
+  return `${LINK_PREFIX}${type}_${safeTs}_${hash}.jsonl`;
 }
 
 async function loadState(stateDir: string): Promise<LinkState> {
